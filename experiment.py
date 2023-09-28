@@ -13,6 +13,7 @@ import requests
 from bardapi import Bard
 from prompts import *
 from utils import *
+import tutorcode_api
 from transformers import pipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSeq2SeqLM
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
@@ -118,9 +119,9 @@ def translate(content):
     print('result: ', ret + '\n')
     return ret
 
-def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
+def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     history = []
     if old_prompt != "" and old_prompt != prompt:
         old_response, old_ret, old_prompt, old_origin_response = [], [], "", []
@@ -171,8 +172,8 @@ def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, s
         ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     return [old_response + response, old_ret + ret, prompt, old_origin_response + origin_response]
 
-def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "/*\n" + prompt + "\n*/\n#"
     if engine == "incoder":
@@ -197,9 +198,9 @@ def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToGPTInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
+def sendToGPTInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
-    history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "one_reply")}]
+    history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, "one_reply")}]
     if engine.startswith('gpt-4'):
         max_token = 7800
     else:
@@ -222,9 +223,9 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
         for j in range(2):
             print('step: ', j, flush=True)
             if j == 0:
-                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "solution")
+                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
             else:
-                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "append_testcase")
+                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
             history.append({'role': 'user', 'content': prompt})
             print('history: ', history, flush=True)
             print('prompt: ', prompt, flush=True)
@@ -261,8 +262,8 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
         old_ret[i] = inside_ret
     return [old_response, old_ret, history, old_origin_response]
 
-def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath=""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath=""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
     retry_cnt = 0
@@ -326,7 +327,7 @@ def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa):
+def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa):
     responses = []
     retry_cnt = 0
     rets = []
@@ -344,21 +345,21 @@ def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, 
             ret = None
             for step in range(3):
                 if step == 0: # human reply
-                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "one_reply")
+                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, "one_reply")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=True):
                         pass
                     res = chunk['text']
                 elif step == 1: # document
-                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "solution")
+                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=False):
                         pass
                     res = chunk['text']
                 elif step == 2: # testcase
-                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "append_testcase")
+                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=False):
@@ -394,8 +395,8 @@ def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, 
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath=""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath=""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
     retry_cnt = 0
@@ -454,7 +455,7 @@ def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, 
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToBardInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa):
+def sendToBardInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa):
     responses = []
     rets = []
     codes = []
@@ -481,17 +482,17 @@ def sendToBardInteractive(result, judge_result, nanti_status_id, description, co
             ret = None
             for step in range(3):
                 if step == 0: # human reply
-                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "one_reply")
+                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, "one_reply")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
                 elif step == 1: # document
-                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "solution")
+                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
                 elif step == 2: # testcase
-                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "append_testcase")
+                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
@@ -522,8 +523,8 @@ def sendToBardInteractive(result, judge_result, nanti_status_id, description, co
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "<|system|>\n<|end|>\n"
     if isinstance(prompt, list):
@@ -552,8 +553,8 @@ def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_f
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "### Human: " + prompt + "\n\n### Assistant:\n"
     responses = []
@@ -576,8 +577,8 @@ def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
+def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = ""
     if isinstance(prompt, list):
@@ -607,7 +608,7 @@ def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type, filepath = ""):
+def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
     inputs_lst = ['' for i in range(reply_count)]
     for i in range(reply_count):
@@ -621,9 +622,9 @@ def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, descriptio
         for j in range(2):
             print('step: ', j, flush=True)
             if j == 0:
-                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "solution")
+                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
             else:
-                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, "append_testcase")
+                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
             inputs += "\n[INST] " + prompt + "\n[/INST]\n```c++\n#include"
             print('history================\n', inputs, flush=True)
             res = ""
@@ -652,111 +653,69 @@ def process(suffix = "", select_ids = None):
     almost_correct = 0
     total_pass = 0
     ac_more = 0
-    base_dir = 'final/'
-    for root, dirs, _ in os.walk(base_dir):
-        for qa_id in sorted(dirs):
-            problem_id = json.loads(read_file_contents(base_dir + str(qa_id) + '/judge_result.txt'))['problemId']
-            print(problem_id)
-            if select_ids is not None and problem_id not in select_ids:
-                continue
-            print(qa_id)
-            if select_ids is not None:
-                description = read_file_contents(work_dir + '/descriptions/' + str(problem_id) + '_fix.txt')
+    for id in range(1239):
+        item = tutorcode_api.fetch_data(id)
+        problem_id = item['problem_id']
+        qa = item['tutorGuidance']
+        description = item['problemDescription']
+        solution = item['solutionDescription']
+        samples = []
+        code_to_fix = item['incorrectCode']
+        stdin = stdout = userout = ''
+        judge_result = item['judgeStatus']
+        stauts = judge_result['status']
+        nanti_status_id = judge_result['status_id']
+        if prompt_type == "interactive":
+            if 'gpt' in engine:
+                result = sendToGPTInteractive(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+            elif engine == 'bard':
+                result = sendToBardInteractive(result, judge_result, description, code_to_fix, solution, samples, qa)
+            elif engine == 'claude':
+                result = sendToClaudeInteractive(result, judge_result, description, code_to_fix, solution, samples, qa)
+            elif engine == 'codellama':
+                result = sendToCodeLLAMAInteractive(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+        else:
+            if 'gpt' in engine:
+                result = sendToGPT(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+            elif engine == 'bard':
+                result = sendToBard(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+            elif engine == 'claude':
+                result = sendToClaude(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+            elif engine == 'codellama':
+                result = sendToCodeLLAMA(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+            elif engine == 'starchat':
+                result = sendToStarChat(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
             else:
-                description = read_file_contents(base_dir + str(qa_id) + '/description_en.txt')
-            solution = read_file_contents(base_dir + str(qa_id) + '/solution_en.txt')
-            samples = []
-            for i in range(1, 4):
-                if os.path.exists(base_dir + str(qa_id) + '/sample' + str(i) + '.in'):
-                    sample_in = read_file_contents(base_dir + str(qa_id) + '/sample' + str(i) + '.in')
-                    sample_out = read_file_contents(base_dir + str(qa_id) + '/sample' + str(i) + '.out')
-                    samples.append([sample_in, sample_out])
-            if not os.path.exists(base_dir + str(qa_id) + '/question_en.txt'):
-                question = json.loads(read_file_contents(base_dir + str(qa_id) + '/question.txt'))
-                for idx in range(len(question)):
-                    question[idx][0] = translate(question[idx][0])
-                with open(base_dir + str(qa_id) + '/question_en.txt', 'w') as file:
-                    file.write(json.dumps(question) + '\n')
-            qa = json.loads(read_file_contents(base_dir + str(qa_id) + '/question_en.txt'))
-            for filepath in sorted(glob.glob(os.path.join(base_dir + str(qa_id) + '/', '*_*.cpp'))):
-                if 'AC' not in filepath:
-                    judge_result = json.loads(read_file_contents(base_dir + str(qa_id) + '/judge_result.txt'))
-                    if os.path.exists(filepath + '.result' + suffix):
-                        result = json.loads(read_file_contents(filepath + '.result' + suffix))
-                    else:
-                        result = [[], [], "", []]
-                    if len(result[0]) < reply_count or (int(suffix) > 2000 and not isinstance(result[0][0], list) and int(suffix) < 100000):
-                        code_to_fix = read_file_contents(filepath)
-                        std_in = read_file_contents(filepath.replace('.cpp', '.stdin'))
-                        std_out = read_file_contents(filepath.replace('.cpp', '.stdout'))
-                        try:
-                            user_out = read_file_contents(filepath.replace('.cpp', '.out'))
-                        except:
-                            user_out = ''
-                        status = filepath.split('/')[-1].split('_')[-1].split('.')[0]
-                        status_id = int(filepath.split('/')[-1].split('_')[0])
-                        if prompt_type == "interactive":
-                            if 'gpt' in engine:
-                                if not os.path.exists(filepath + '.result' + suffix):
-                                    result = json.loads(read_file_contents(filepath + '.result' + str(int(suffix) % 1000)))
-                                    result = sendToGPTInteractive(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                            elif engine == 'bard':
-                                result = sendToBardInteractive(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa)
-                            elif engine == 'claude':
-                                result = sendToClaudeInteractive(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa)
-                            elif engine == 'codellama':
-                                if not os.path.exists(filepath + '.result' + suffix):
-                                    result = json.loads(read_file_contents(filepath + '.result' + str(int(suffix) - 1000)))
-                                    result = sendToCodeLLAMAInteractive(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                        else:
-                            if 'gpt' in engine:
-                                result = sendToGPT(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                            elif engine == 'bard':
-                                result = sendToBard(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                            elif engine == 'claude':
-                                result = sendToClaude(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                            elif engine == 'codellama':
-                                result = sendToCodeLLAMA(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                            elif engine == 'starchat':
-                                result = sendToStarChat(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                            else:
-                                result = sendToCodeModel(result, judge_result, status_id, description, code_to_fix, solution, status, user_out, std_in, std_out, samples, qa, prompt_type)
-                        if result is None:
-                            continue
-                        with open(filepath + '.result' + suffix, 'w') as file:
-                            file.write(json.dumps(result) + '\n')
-                    old_passed = -1
-                    nanti_status_id = int(filepath.split('/')[-1].split('_')[0])
-                    for item in judge_result['notac']:
-                        if item['nantiStatusId'] == nanti_status_id:
-                            old_passed = item['extra']['testcase']['passed']
-                            break
-                    if old_passed == -1:
-                        print('data error')
-                        sys.exit(-1)
-                    result_data = json.loads(read_file_contents(filepath + '.result' + suffix))
-                    result = result_data[1]
-                    add_ac, add_almost = True, False
-                    for i in range(min(reply_count, len(result))):
-                        if result[i]['statusCode'] == 4:
-                            add_almost = True
-                            total_pass += 1
-                        else:
-                            add_ac = False
-                        now_pass = 0
-                        print(result[i])
-                        for it in result[i]['extra']:
-                            print(it)
-                            if it['statusCode'] == 4:
-                                now_pass += 1
-                        if now_pass > old_passed:
-                            ac_more += 1
-                    if add_ac:
-                        ac += 1
-                    if add_almost:
-                        almost_correct += 1
-                    total += 1
-                    print('%d(%.1f\\%%) & %.1f(%.1f\\%%) & %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, total))
+                result = sendToCodeModel(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+        old_passed = -1
+        for item in judge_result['notac']:
+            if item['nantiStatusId'] == nanti_status_id:
+                old_passed = item['extra']['testcase']['passed']
+                break
+        if old_passed == -1:
+            print('data error')
+            sys.exit(-1)
+        add_ac, add_almost = True, False
+        for i in range(min(reply_count, len(result))):
+            if result[i]['statusCode'] == 4:
+                add_almost = True
+                total_pass += 1
+            else:
+                add_ac = False
+            now_pass = 0
+            print(result[i])
+            for it in result[i]['extra']:
+                print(it)
+                if it['statusCode'] == 4:
+                    now_pass += 1
+            if now_pass > old_passed:
+                ac_more += 1
+        if add_ac:
+            ac += 1
+        if add_almost:
+            almost_correct += 1
+        total += 1
+        print('%d(%.1f\\%%) & %.1f(%.1f\\%%) & %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, total))
 if __name__ == "__main__":
     output_self()
     process(sys.argv[1])
