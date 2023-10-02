@@ -76,7 +76,7 @@ def buildOneReplyAndTestcasePrompt(judge_result, nanti_status_id, description, c
         if item['nantiStatusId'] == nanti_status_id:
             judge_item = item
             break
-    for i in range(case_max_cnt[judge_result['problemId']]):
+    for i in range(len(judge_item['extra']['statuses'])):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
             input_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['input']))
             output_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['output']))
@@ -113,7 +113,7 @@ def buildTestcasePrompt(judge_result, nanti_status_id, description, code_to_fix,
         status = 'FE'
     elif user_out == '无法显示，输出包含二进制数据':
         status = 'BE'
-    for i in range(case_max_cnt[judge_result['problemId']]):
+    for i in range(len(judge_item['extra']['statuses'])):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
             input_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['input']))
             output_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['output']))
@@ -144,7 +144,7 @@ def buildOneReplyAndSolutionAndTestcaseImprovedNewPrompt(judge_result, nanti_sta
         status = 'FE'
     elif user_out == '无法显示，输出包含二进制数据':
         status = 'BE'
-    for i in range(case_max_cnt[judge_result['problemId']]):
+    for i in range(len(judge_item['extra']['statuses'])):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
             input_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['input']))
             output_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['output']))
@@ -181,7 +181,7 @@ def buildOneReplyAndSolutionAndTestcaseArray2Prompt(judge_result, nanti_status_i
         status = 'FE'
     elif user_out == '无法显示，输出包含二进制数据':
         status = 'BE'
-    for i in range(case_max_cnt[judge_result['problemId']]):
+    for i in range(len(judge_item['extra']['statuses'])):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
             input_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['input']))
             output_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['output']))
@@ -234,7 +234,7 @@ def buildSolutionAndTestcasePrompt(judge_result, nanti_status_id, description, c
         status = 'FE'
     elif user_out == '无法显示，输出包含二进制数据':
         status = 'BE'
-    for i in range(case_max_cnt[judge_result['problemId']]):
+    for i in range(len(judge_item['extra']['statuses'])):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
             input_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['input']))
             output_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['output']))
@@ -252,7 +252,7 @@ def buildSolutionAndTestcasePrompt(judge_result, nanti_status_id, description, c
 def buildAppendTestcasePrompt(judge_item, problem_id, status):
     prompt = append_prompt
     input_test, output_test = [], []
-    for i in range(case_max_cnt[problem_id]):
+    for i in range(len(judge_item['extra']['statuses'])):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
             input_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['input']))
             output_test.append(add_eoln(tutorcode_api.get_testcase(problem_id, i + 1)['output']))

@@ -149,35 +149,24 @@ def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix,
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")}]
+def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa):
+    origin_response = response = ret = ['' for i in range(reply_count)]
     if engine.startswith('gpt-4'):
         max_token = 7800
     else:
         max_token = 4090
     for i in range(reply_count):
         print('number: ', i, flush=True)
-        inside_ret = copy.deepcopy(old_ret[i])
-        inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
-        if inside_ret['statusCode'] == 4:
-            print('Already been accepted, skip ......', flush=True)
-            continue
-        if isinstance(old_origin_response[i], list) and len(old_origin_response[i]) == 1 and isinstance(old_origin_response[i][0], str):
-            inside_old_response = old_origin_response[i][0]
-        elif isinstance(old_origin_response[i], str):
-            inside_old_response = old_origin_response[i]
-        else:
-            inside_old_response = old_origin_response[i]['message']['content']
-        history.append({'role': 'assistant', 'content': inside_old_response})
-        inside_res = [inside_old_response]
+        history = []
+        inside_res = []
         for j in range(3):
             print('step: ', j, flush=True)
             if j == 0:
-                prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")
+                prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, "reply")
             elif j == 1:
-                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
+                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, qa, "solution")
             else:
-                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
+                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, qa, "append_testcase")
             history.append({'role': 'user', 'content': prompt})
             print('history: ', history, flush=True)
             print('prompt: ', prompt, flush=True)
@@ -206,13 +195,13 @@ def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to
             history.append({'role': 'assistant', 'content': res})
             now_code = extract_code(res)
             inside_ret = tutorcode_api.judge(id, now_code)
-            if inside_ret['statusCode'] == 4 or j == 1:
+            if inside_ret['statusCode'] == 4 or j == 2:
                 break
-            inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
-        old_origin_response[i] = inside_res
-        old_response[i] = now_code
-        old_ret[i] = inside_ret
-    return [old_response, old_ret, history, old_origin_response]
+            inside_ret['extra'] = format_extra(inside_ret, judge_result['case_cnt'])
+        origin_response[i] = inside_res
+        response[i] = now_code
+        ret[i] = inside_ret
+    return [response, ret, history, origin_response]
 
 def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
@@ -324,7 +313,7 @@ def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code
                 ret_in.append(ret)
                 if ret['statusCode'] == 4 or step == 2:
                     break
-                ret['extra'] = format_extra(ret, case_max_cnt[judge_result['problemId']])
+                ret['extra'] = format_extra(ret, judge_result['case_cnt'])
                 print(ret, flush=True)
                 time.sleep(3)
                 print('sleep 3s to avoid banned by poe...', flush=True)
@@ -456,7 +445,7 @@ def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_t
                 ret = tutorcode_api.judge(id, now_code)
                 if ret['statusCode'] == 4 or step == 2:
                     break
-                ret['extra'] = format_extra(ret, case_max_cnt[judge_result['problemId']])
+                ret['extra'] = format_extra(ret, judge_result['case_cnt'])
                 print(ret, flush=True)
                 time.sleep(3)
                 print('sleep 3s to avoid banned by Bard...', flush=True)
@@ -565,7 +554,7 @@ def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, c
     for i in range(reply_count):
         print('number: ', i, flush=True)
         inside_ret = copy.deepcopy(old_ret[i])
-        inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
+        inside_ret['extra'] = format_extra(inside_ret, judge_result['case_cnt'])
         if inside_ret['statusCode'] == 4:
             print('Already been accepted, skip ......', flush=True)
             continue
@@ -592,7 +581,7 @@ def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, c
             if inside_ret['statusCode'] == 4 or j == 1:
                 break
             inputs = res
-            inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
+            inside_ret['extra'] = format_extra(inside_ret, judge_result['case_cnt'])
         old_response[i] = now_code
         inputs_lst[i] = inputs
         old_ret[i] = inside_ret
@@ -602,7 +591,7 @@ def process():
     total = 0
     almost_correct = 0
     total_pass = 0
-    for id in range(1, 1240):
+    for id in range(4, 1240):
         item = tutorcode_api.fetch_data(id)
         qa = item['tutorGuidance']
         description = item['problemDescription']
@@ -617,7 +606,7 @@ def process():
                 status = OJ_STATUSES[item['statusFlag']]
         if prompt_type == "interactive":
             if 'gpt' in engine:
-                result = sendToGPTInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
+                result = sendToGPTInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa)
             elif engine == 'bard':
                 result = sendToBardInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa)
             elif engine == 'claude':
