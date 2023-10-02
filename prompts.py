@@ -1,4 +1,5 @@
 from utils import *
+import tutorcode_api
 
 type_name = {
     "AC": "run correctly",
@@ -93,8 +94,8 @@ def buildOneReplyAndTestcasePrompt(judge_result, nanti_status_id, description, c
             break
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
         prompt += "There are some compilation errors of the incorrect code:\n\n" + compile_log + '\n\n'
@@ -152,8 +153,8 @@ def buildTestcasePrompt(judge_result, nanti_status_id, description, code_to_fix,
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
         prompt += "There are some compilation errors of the incorrect code:\n\n" + compile_log + '\n\n'
@@ -183,8 +184,8 @@ def buildOneReplyAndSolutionAndTestcasePrompt(judge_result, nanti_status_id, des
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\nThis is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
@@ -218,8 +219,8 @@ def buildOneReplyAndSolutionAndTestcaseImprovedPrompt(judge_result, nanti_status
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\nThis is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
@@ -253,8 +254,8 @@ def buildOneReplyAndSolutionAndTestcaseImproved2Prompt(judge_result, nanti_statu
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\nThis is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
     prompt += get_onereply(nanti_status_id, qa)
     prompt += "\n\n==========\n\n"
@@ -290,8 +291,8 @@ def buildOneReplyAndSolutionAndTestcaseImprovedOldPrompt(judge_result, nanti_sta
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\nThis is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
     prompt += get_onereply(nanti_status_id, qa)
     prompt += "\n\n==========================================\n\n"
@@ -326,8 +327,8 @@ def buildOneReplyAndSolutionAndTestcaseImprovedNewPrompt(judge_result, nanti_sta
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\n# Incorrect Code\n```c++\n" + code_to_fix + "```\n\n"
     prompt += "# Instructor Reply\n\n"
     prompt += get_onereply(nanti_status_id, qa)
@@ -363,8 +364,8 @@ def buildOneReplyAndSolutionAndTestcaseArrayPrompt(judge_result, nanti_status_id
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\nThis is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
     prompts.append(prompt)
     if status == "CE":
@@ -402,8 +403,8 @@ def buildOneReplyAndSolutionAndTestcaseArray2Prompt(judge_result, nanti_status_i
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     prompt += "\n\nThis is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
     prompt += get_onereply(nanti_status_id, qa)
     prompts.append(prompt)
@@ -455,8 +456,8 @@ def buildSolutionAndTestcasePrompt(judge_result, nanti_status_id, description, c
         status = 'BE'
     for i in range(case_max_cnt[judge_result['problemId']]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
         prompt += "There are some compilation errors of the incorrect code:\n\n" + compile_log + '\n\n'
@@ -478,8 +479,8 @@ def buildSolutionAndTestcaseAppendPrompt(judge_item, problem_id, status, solutio
     input_test, output_test = [], []
     for i in range(case_max_cnt[problem_id]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
         prompt += "There are some compilation errors of the incorrect code you replied:\n\n" + compile_log + '\n\n'
@@ -497,8 +498,8 @@ def buildAppendTestcasePrompt(judge_item, problem_id, status):
     input_test, output_test = [], []
     for i in range(case_max_cnt[problem_id]):
         if (status == 'CE' or judge_item['extra']['statuses'][i] != 4):
-            input_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/in' + str(i + 1) + '.in')))
-            output_test.append(add_eoln(read_file_contents('/root/testcases/' + str(problem_id) + '/std' + str(i + 1) + '.out')))
+            input_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['input'])))
+            output_test.append(add_eoln(read_file_contents(tutorcode_api.get_testcase(problem_id, i + 1)['output'])))
     if status == "CE":
         compile_log = parse_warning(judge_item['compileErrorLog']).strip()
         prompt += "There are some compilation errors of the incorrect code:\n\n" + compile_log + '\n\n'
