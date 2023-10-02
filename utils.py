@@ -35,13 +35,6 @@ def similarity(s1, s2):
     matcher = difflib.SequenceMatcher(None, normalized1, normalized2)
     return matcher.ratio()
 
-case_max_cnt = {}
-case_cnt = {}
-for line in open('case.config', 'r').readlines():
-    ts = line.strip().split('\t')
-    case_max_cnt[int(ts[0])] = int(ts[1])
-    case_cnt[int(ts[0])] = int(ts[2])
-
 def read_file_contents(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()

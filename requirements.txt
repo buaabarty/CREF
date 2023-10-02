@@ -1,5 +1,8 @@
 poe-api
-bardapi
-transformer
-autogptq
+bardapi==0.1.23a
+transformers
+auto-gptq
 openai
+langdetect
+colorama
+tiktoken
