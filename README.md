@@ -4,6 +4,7 @@ CREF codes with the description of benchmark TutorCode
 # preparement
 ```
 pip install -r requirements.txt
+unzip testcases.zip
 ```
 
 # RQ-1
@@ -43,6 +44,8 @@ python3 experiment.py 22 5 interactive claude
 python3 experiment.py 23 5 interactive bard
 python3 experiment.py 24 5 interactive codellama
 ```
+
+The first parameter of each command should be unique.
 
 # TutorCode API
 

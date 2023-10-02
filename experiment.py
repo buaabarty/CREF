@@ -607,10 +607,8 @@ def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, c
 
 def process(suffix = "", select_ids = None):
     total = 0
-    ac = 0
     almost_correct = 0
     total_pass = 0
-    ac_more = 0
     for id in range(1, 1240):
         item = tutorcode_api.fetch_data(id)
         qa = item['tutorGuidance']
@@ -618,7 +616,6 @@ def process(suffix = "", select_ids = None):
         solution = item['solutionDescription']
         code_to_fix = item['incorrectCode']
         judge_result = item['judgeResult']
-        nanti_status_id = judge_result['status_id']
         if prompt_type == "interactive":
             if 'gpt' in engine:
                 result = sendToGPTInteractive(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
@@ -641,35 +638,21 @@ def process(suffix = "", select_ids = None):
                 result = sendToStarChat(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             else:
                 result = sendToCodeModel(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
-        old_passed = -1
-        for item in judge_result['notac']:
-            if item['nantiStatusId'] == nanti_status_id:
-                old_passed = item['extra']['testcase']['passed']
-                break
-        if old_passed == -1:
-            print('data error')
-            sys.exit(-1)
-        add_ac, add_almost = True, False
+        add_almost = False
         for i in range(min(reply_count, len(result))):
             if result[i]['statusCode'] == 4:
                 add_almost = True
                 total_pass += 1
-            else:
-                add_ac = False
             now_pass = 0
             print(result[i])
             for it in result[i]['extra']:
                 print(it)
                 if it['statusCode'] == 4:
                     now_pass += 1
-            if now_pass > old_passed:
-                ac_more += 1
-        if add_ac:
-            ac += 1
         if add_almost:
             almost_correct += 1
         total += 1
-        print('%d(%.1f\\%%) & %.1f(%.1f\\%%) & %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, total))
+        print('TOP-5: %d(%.1f\\%%), AVG-5: %.1f(%.1f\\%%) & %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, total))
 if __name__ == "__main__":
     output_self()
     process(sys.argv[1])
