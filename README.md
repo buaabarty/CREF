@@ -4,7 +4,6 @@ CREF codes with the description of benchmark TutorCode
 # preparement
 ```
 pip install -r requirements.txt
-unzip testcases.zip
 ```
 
 # RQ-1

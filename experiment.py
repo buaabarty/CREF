@@ -97,7 +97,6 @@ def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solut
     todo = reply_count
     while True:
         try:
-            start_time = time.time()
             chat_completion = openai.ChatCompletion.create(
                 model=engine,
                 messages=history,
@@ -111,7 +110,6 @@ def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solut
             )
             res = ["" for i in range(todo)]
             for event in chat_completion:
-                event_time = time.time() - start_time
                 for choice in event['choices']:
                     event_text = choice['delta']
                     answer = event_text.get('content', '')
@@ -567,7 +565,6 @@ def sendToCodeLLAMA(id, judge_result, nanti_status_id, description, code_to_fix,
     return [response, ret, prompt, responses]
 
 def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
-    old_response, old_ret, old_prompt, old_origin_response = result
     inputs_lst = ['' for i in range(reply_count)]
     for i in range(reply_count):
         print('number: ', i, flush=True)
