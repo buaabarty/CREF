@@ -13,9 +13,9 @@ from bardapi import Bard
 from prompts import *
 from utils import *
 import tutorcode_api
-from transformers import pipeline
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSeq2SeqLM
-from auto_gptq import AutoGPTQForCausalLM
+#from transformers import pipeline
+#from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSeq2SeqLM
+#from auto_gptq import AutoGPTQForCausalLM
 socket.setdefaulttimeout(480)
 
 openai.api_key = api_key
@@ -33,56 +33,56 @@ if len(sys.argv) > 2:
 else:
     reply_count = 5
 
-if engine == 'starchat':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "starchat-alpha")
-    model = AutoModelForCausalLM.from_pretrained(model_dir + "starchat-alpha", device_map="auto", load_in_8bit=True)
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-elif engine == 'codellama':
-    use_triton = False
-    model_name = model_dir + "CodeLlama-13B-Instruct-GPTQ"
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-    model = AutoGPTQForCausalLM.from_quantized(model_name,
-        use_safetensors=True,
-        trust_remote_code=True,
-        device="cuda:0",
-        use_triton=use_triton,
-        quantize_config=None)
-    pipe = pipeline(
-        "text-generation",
-        model=model,
-        tokenizer=tokenizer
-    )
-elif engine == 'vicuna':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "stable-vicuna-13B-HF")
-    model = AutoModelForCausalLM.from_pretrained(model_dir + "stable-vicuna-13B-HF", device_map="auto", load_in_8bit=True)
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-elif engine == 'codegen6b':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "codegen-6B-multi")
-    model = AutoModelForCausalLM.from_pretrained(model_dir + "codegen-6B-multi", load_in_8bit=True, device_map='auto')
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-elif engine == 'codegen16b':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "codegen-16B-multi")
-    model = AutoModelForCausalLM.from_pretrained(model_dir + "codegen-16B-multi", load_in_8bit=True, device_map='auto')
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-elif engine == 'codet5p':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "codet5p-16b")
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_dir + "codet5p-16b", load_in_8bit=True, device_map='auto', low_cpu_mem_usage=True, trust_remote_code=True)
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-elif engine == 'incoder':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "incoder-6B")
-    model = AutoModelForCausalLM.from_pretrained(model_dir + "incoder-6B", load_in_8bit=True, device_map='auto')
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
-elif engine == 'replit':
-    tokenizer = AutoTokenizer.from_pretrained(model_dir + "replit-code-v1-3b", trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(model_dir + "replit-code-v1-3b", trust_remote_code=True, device_map='auto')
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#if engine == 'starchat':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "starchat-alpha")
+#    model = AutoModelForCausalLM.from_pretrained(model_dir + "starchat-alpha", device_map="auto", load_in_8bit=True)
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#elif engine == 'codellama':
+#    use_triton = False
+#    model_name = model_dir + "CodeLlama-13B-Instruct-GPTQ"
+#    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+#    model = AutoGPTQForCausalLM.from_quantized(model_name,
+#        use_safetensors=True,
+#        trust_remote_code=True,
+#        device="cuda:0",
+#        use_triton=use_triton,
+#        quantize_config=None)
+#    pipe = pipeline(
+#        "text-generation",
+#        model=model,
+#        tokenizer=tokenizer
+#    )
+#elif engine == 'vicuna':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "stable-vicuna-13B-HF")
+#    model = AutoModelForCausalLM.from_pretrained(model_dir + "stable-vicuna-13B-HF", device_map="auto", load_in_8bit=True)
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#elif engine == 'codegen6b':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "codegen-6B-multi")
+#    model = AutoModelForCausalLM.from_pretrained(model_dir + "codegen-6B-multi", load_in_8bit=True, device_map='auto')
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#elif engine == 'codegen16b':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "codegen-16B-multi")
+#    model = AutoModelForCausalLM.from_pretrained(model_dir + "codegen-16B-multi", load_in_8bit=True, device_map='auto')
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#elif engine == 'codet5p':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "codet5p-16b")
+#    model = AutoModelForSeq2SeqLM.from_pretrained(model_dir + "codet5p-16b", load_in_8bit=True, device_map='auto', low_cpu_mem_usage=True, trust_remote_code=True)
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#elif engine == 'incoder':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "incoder-6B")
+#    model = AutoModelForCausalLM.from_pretrained(model_dir + "incoder-6B", load_in_8bit=True, device_map='auto')
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+#elif engine == 'replit':
+#    tokenizer = AutoTokenizer.from_pretrained(model_dir + "replit-code-v1-3b", trust_remote_code=True)
+#    model = AutoModelForCausalLM.from_pretrained(model_dir + "replit-code-v1-3b", trust_remote_code=True, device_map='auto')
+#    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
 
 delay_time = 0.001
 timeout = 20
 poe_token_cnt = 0
 
-def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
+def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
     history = []
     if isinstance(prompt, list):
         for pmt in prompt:
@@ -95,6 +95,8 @@ def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solut
     else:
         max_token = 4000
     todo = reply_count
+    print(history)
+    print(max_token-tot_token)
     while True:
         try:
             chat_completion = openai.ChatCompletion.create(
@@ -106,16 +108,10 @@ def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solut
                 presence_penalty=0.0,
                 frequency_penalty=0.0,
                 max_tokens=max_token-tot_token,
-                stream=True,
             )
-            res = ["" for i in range(todo)]
-            for event in chat_completion:
-                for choice in event['choices']:
-                    event_text = choice['delta']
-                    answer = event_text.get('content', '')
-                    res[choice['index']] += answer
-                time.sleep(delay_time)
-            origin_response = res
+            origin_response = []
+            for item in chat_completion['choices']:
+                origin_response.append(item['message']['content'])
             break
         except Exception as e:
             print(e)
@@ -642,8 +638,9 @@ def process():
             else:
                 result = sendToCodeModel(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
         add_almost = False
-        for i in range(min(reply_count, len(result))):
-            if result[i]['statusCode'] == 4:
+        print(result)
+        for i in range(min(reply_count, len(result[1]))):
+            if result[1][i]['statusCode'] == 4:
                 add_almost = True
                 total_pass += 1
         if add_almost:
