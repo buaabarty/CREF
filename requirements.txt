@@ -1,0 +1,5 @@
+poe-api
+bardapi
+transformer
+autogptq
+openai

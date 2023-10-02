@@ -3,7 +3,6 @@ import glob
 import sys
 import os
 import json
-import judge
 import time
 import openai
 import copy
@@ -16,7 +15,7 @@ from utils import *
 import tutorcode_api
 from transformers import pipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSeq2SeqLM
-from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
+from auto_gptq import AutoGPTQForCausalLM
 socket.setdefaulttimeout(480)
 
 openai.api_key = api_key
@@ -82,46 +81,9 @@ delay_time = 0.001
 timeout = 20
 poe_token_cnt = 0
 
-def translate(content):
-    if content.isspace():
-        return ''
-    if not contains_chinese(content):
-        return content
-    ret = ""
-    while True:
-        try:
-            chat_completion = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[{
-                    "role": "system",
-                    "content": "Don't display task instructions and any additional contents, and follow the task instructions to translate the given Chinese content literally, and only return the translated content."
-                }, {
-                    "role": "user",
-                    "content": 'Translate the following Chinese content into English literally, making sure to keep the formatting (such as `` , $$, #, etc.) unchanged. When the phrase "蒜头君" appears in its entirety, translate it as "Mr. Garlic." Do not translate other words in this way. Remove all unnecessary interjections such as "哦," "噢," "嗯嗯," etc. Do not translate this sentence; only translate the content below and organize the format according to the Markdown standard.\n\nContent: ' + content
-                }],
-                temperature=temperature,
-                n=1,
-                top_p=1.0,
-                presence_penalty=0.0,
-                frequency_penalty=0.0,
-                user="user",
-                timeout=20
-            )
-            ret = chat_completion['choices'][0]['message']['content']
-            print(ret)
-            break
-        except Exception as e:
-            print(e)
-            print('sleep 30s ...')
-            time.sleep(30)
-    if '\nContent: ' in ret or ret.startswith('Content: '):
-        ret = ret.split('Content: ')[-1]
-    print('result: ', ret + '\n')
-    return ret
-
-def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     history = []
     if old_prompt != "" and old_prompt != prompt:
         old_response, old_ret, old_prompt, old_origin_response = [], [], "", []
@@ -169,11 +131,11 @@ def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, s
     for item in origin_response:
         now_code = extract_code(item)
         response.append(now_code)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     return [old_response + response, old_ret + ret, prompt, old_origin_response + origin_response]
 
-def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "/*\n" + prompt + "\n*/\n#"
     if engine == "incoder":
@@ -194,13 +156,13 @@ def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_
         now_code = extract_code(item.split('\n*/\n')[-1])
         response.append(now_code)
         print(now_code, flush=True)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToGPTInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+def sendToGPTInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
-    history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, "one_reply")}]
+    history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")}]
     if engine.startswith('gpt-4'):
         max_token = 7800
     else:
@@ -208,7 +170,7 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
     for i in range(reply_count):
         print('number: ', i, flush=True)
         inside_ret = copy.deepcopy(old_ret[i])
-        inside_ret['extra'] = judge.format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
+        inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
         if inside_ret['statusCode'] == 4:
             print('Already been accepted, skip ......', flush=True)
             continue
@@ -223,9 +185,9 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
         for j in range(2):
             print('step: ', j, flush=True)
             if j == 0:
-                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
+                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
             else:
-                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
+                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
             history.append({'role': 'user', 'content': prompt})
             print('history: ', history, flush=True)
             print('prompt: ', prompt, flush=True)
@@ -253,17 +215,17 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
             inside_res.append(res)
             history.append({'role': 'assistant', 'content': res})
             now_code = extract_code(res)
-            inside_ret = judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+            inside_ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
             if inside_ret['statusCode'] == 4 or j == 1:
                 break
-            inside_ret['extra'] = judge.format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
+            inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
         old_origin_response[i] = inside_res
         old_response[i] = now_code
         old_ret[i] = inside_ret
     return [old_response, old_ret, history, old_origin_response]
 
-def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath=""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
     retry_cnt = 0
@@ -323,11 +285,11 @@ def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix
         else:
             now_code = extract_code(item)
         response.append(now_code)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa):
+def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
     responses = []
     retry_cnt = 0
     rets = []
@@ -345,21 +307,21 @@ def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, 
             ret = None
             for step in range(3):
                 if step == 0: # human reply
-                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, "one_reply")
+                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=True):
                         pass
                     res = chunk['text']
                 elif step == 1: # document
-                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
+                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=False):
                         pass
                     res = chunk['text']
                 elif step == 2: # testcase
-                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
+                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=False):
@@ -368,11 +330,11 @@ def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, 
                 print(res, flush=True)
                 response.append(res)
                 now_code = extract_code(res)
-                ret = judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+                ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
                 ret_in.append(ret)
                 if ret['statusCode'] == 4 or step == 2:
                     break
-                ret['extra'] = judge.format_extra(ret, case_max_cnt[judge_result['problemId']])
+                ret['extra'] = format_extra(ret, case_max_cnt[judge_result['problemId']])
                 print(ret, flush=True)
                 time.sleep(3)
                 print('sleep 3s to avoid banned by poe...', flush=True)
@@ -395,8 +357,8 @@ def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, 
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath=""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
     retry_cnt = 0
@@ -451,11 +413,11 @@ def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, 
         else:
             now_code = extract_code(item)
         response.append(now_code)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToBardInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa):
+def sendToBardInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
     responses = []
     rets = []
     codes = []
@@ -482,17 +444,17 @@ def sendToBardInteractive(result, judge_result, nanti_status_id, description, co
             ret = None
             for step in range(3):
                 if step == 0: # human reply
-                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, "one_reply")
+                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
                 elif step == 1: # document
-                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
+                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
                 elif step == 2: # testcase
-                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
+                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
@@ -501,10 +463,10 @@ def sendToBardInteractive(result, judge_result, nanti_status_id, description, co
                 print(res, flush=True)
                 response.append(res)
                 now_code = extract_code(res)
-                ret = judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+                ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
                 if ret['statusCode'] == 4 or step == 2:
                     break
-                ret['extra'] = judge.format_extra(ret, case_max_cnt[judge_result['problemId']])
+                ret['extra'] = format_extra(ret, case_max_cnt[judge_result['problemId']])
                 print(ret, flush=True)
                 time.sleep(3)
                 print('sleep 3s to avoid banned by Bard...', flush=True)
@@ -523,8 +485,8 @@ def sendToBardInteractive(result, judge_result, nanti_status_id, description, co
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "<|system|>\n<|end|>\n"
     if isinstance(prompt, list):
@@ -549,12 +511,12 @@ def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_f
         now_code = extract_code(item.split('<|assistant|>')[-1])
         response.append(now_code)
         print(now_code, flush=True)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "### Human: " + prompt + "\n\n### Assistant:\n"
     responses = []
@@ -573,12 +535,12 @@ def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix
         now_code = extract_code(item.split('\n### Assistant:\n')[-1])
         response.append(now_code)
         print(now_code, flush=True)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type)
+def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = ""
     if isinstance(prompt, list):
@@ -604,17 +566,17 @@ def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_
         now_code = extract_last_cpp_code(item.split('\n[/INST]')[-1])
         response.append(now_code)
         print('code:', now_code, flush=True)
-        ret.append(judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, samples, qa, prompt_type, filepath = ""):
+def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
     inputs_lst = ['' for i in range(reply_count)]
     for i in range(reply_count):
         print('number: ', i, flush=True)
         inside_ret = copy.deepcopy(old_ret[i])
-        inside_ret['extra'] = judge.format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
+        inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
         if inside_ret['statusCode'] == 4:
             print('Already been accepted, skip ......', flush=True)
             continue
@@ -622,9 +584,9 @@ def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, descriptio
         for j in range(2):
             print('step: ', j, flush=True)
             if j == 0:
-                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, samples, qa, "solution")
+                prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
             else:
-                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, samples, qa, "append_testcase")
+                prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
             inputs += "\n[INST] " + prompt + "\n[/INST]\n```c++\n#include"
             print('history================\n', inputs, flush=True)
             res = ""
@@ -636,12 +598,12 @@ def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, descriptio
             print(res, flush=True)
             now_code = extract_last_cpp_code(res.split('\n[/INST]')[-1])
             print(now_code, flush=True)
-            inside_ret = judge.judgeByDetails(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+            inside_ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
             old_origin_response[i] = res
             if inside_ret['statusCode'] == 4 or j == 1:
                 break
             inputs = res
-            inside_ret['extra'] = judge.format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
+            inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
         old_response[i] = now_code
         inputs_lst[i] = inputs
         old_ret[i] = inside_ret
@@ -667,26 +629,26 @@ def process(suffix = "", select_ids = None):
         nanti_status_id = judge_result['status_id']
         if prompt_type == "interactive":
             if 'gpt' in engine:
-                result = sendToGPTInteractive(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToGPTInteractive(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'bard':
-                result = sendToBardInteractive(result, judge_result, description, code_to_fix, solution, samples, qa)
+                result = sendToBardInteractive(result, judge_result, description, code_to_fix, solution, qa)
             elif engine == 'claude':
-                result = sendToClaudeInteractive(result, judge_result, description, code_to_fix, solution, samples, qa)
+                result = sendToClaudeInteractive(result, judge_result, description, code_to_fix, solution, qa)
             elif engine == 'codellama':
-                result = sendToCodeLLAMAInteractive(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToCodeLLAMAInteractive(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
         else:
             if 'gpt' in engine:
-                result = sendToGPT(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToGPT(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'bard':
-                result = sendToBard(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToBard(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'claude':
-                result = sendToClaude(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToClaude(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'codellama':
-                result = sendToCodeLLAMA(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToCodeLLAMA(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'starchat':
-                result = sendToStarChat(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToStarChat(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
             else:
-                result = sendToCodeModel(result, judge_result, description, code_to_fix, solution, samples, qa, prompt_type)
+                result = sendToCodeModel(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
         old_passed = -1
         for item in judge_result['notac']:
             if item['nantiStatusId'] == nanti_status_id:
