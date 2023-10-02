@@ -40,7 +40,7 @@ if engine == 'starchat':
    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
 elif engine == 'codellama':
    use_triton = False
-   model_name = model_dir + "TheBloke/CodeLlama-13B-Instruct-GPTQ"
+   model_name = model_dir + "CodeLlama-13B-Instruct-GPTQ"
    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
    model = AutoGPTQForCausalLM.from_quantized(model_name,
        use_safetensors=True,
