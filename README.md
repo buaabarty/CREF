@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 # RQ-1
 ```
-python3 experiment.py 5 default gpt-4
+python3 experiment.py 5 default gpt-4-0613
 python3 experiment.py 5 default gpt-3.5-turbo-0613
 python3 experiment.py 5 default claude
 python3 experiment.py 5 default bard
@@ -31,20 +31,20 @@ python3 experiment.py 5 default replit
 
 # RQ-2
 ```
-python3 experiment.py 5 reply gpt-4
-python3 experiment.py 5 solution gpt-4
-python3 experiment.py 5 testcase gpt-4
-python3 experiment.py 5 reply_and_solution gpt-4
-python3 experiment.py 5 reply_and_testcase gpt-4
-python3 experiment.py 5 solution_and_testcase gpt-4
-python3 experiment.py 5 reply_and_solution_and_testcase4 gpt-4
+python3 experiment.py 5 reply gpt-4-0613
+python3 experiment.py 5 solution gpt-4-0613
+python3 experiment.py 5 testcase gpt-4-0613
+python3 experiment.py 5 reply_and_solution gpt-4-0613
+python3 experiment.py 5 reply_and_testcase gpt-4-0613
+python3 experiment.py 5 solution_and_testcase gpt-4-0613
+python3 experiment.py 5 reply_and_solution_and_testcase4 gpt-4-0613
 ```
 
-Other LLM can replace `gpt-4` with correseponding model name, detailed in `buildPrompt` function of `prompts.py` file.
+Other LLM can replace `gpt-4-0613` with correseponding model name, detailed in `buildPrompt` function of `prompts.py` file.
 
 # RQ-3
 ```
-python3 experiment.py 5 interactive gpt-4
+python3 experiment.py 5 interactive gpt-4-0613
 python3 experiment.py 5 interactive gpt-3.5-turbo
 python3 experiment.py 5 interactive claude
 python3 experiment.py 5 interactive bard
