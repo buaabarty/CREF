@@ -49,10 +49,10 @@ clang.cindex.Config.set_library_file(settings.llvm_dir)
 index = clang.cindex.Index.create()
 
 def calc_dist(code1, code2):
-    f1 = open('/tmp/' + str(uuid.uuid4()) + '.cpp', 'w')
+    f1 = open('/tmp/' + str(uuid.uuid4()) + '.cpp', 'w', encoding='utf-8')
     f1.write(code1)
     f1.close()
-    f2 = open('/tmp/' + str(uuid.uuid4()) + '.cpp', 'w')
+    f2 = open('/tmp/' + str(uuid.uuid4()) + '.cpp', 'w', encoding='utf-8')
     f2.write(code2)
     f2.close()
     ast1 = index.parse(f1.name).cursor
