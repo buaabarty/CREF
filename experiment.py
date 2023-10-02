@@ -126,8 +126,8 @@ def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solut
         ret.append(tutorcode_api.judge(id, now_code))
     return [response, ret, prompt, origin_response]
 
-def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
+def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "/*\n" + prompt + "\n*/\n#"
     if engine == "incoder":
@@ -206,8 +206,8 @@ def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to
         ret[i] = inside_ret
     return [response, ret, history, origin_response]
 
-def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
+def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
     retry_cnt = 0
@@ -271,7 +271,7 @@ def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, so
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
+def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa):
     responses = []
     retry_cnt = 0
     rets = []
@@ -289,21 +289,21 @@ def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code
             ret = None
             for step in range(3):
                 if step == 0: # human reply
-                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")
+                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, "reply")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=True):
                         pass
                     res = chunk['text']
                 elif step == 1: # document
-                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
+                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, qa, "solution")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=False):
                         pass
                     res = chunk['text']
                 elif step == 2: # testcase
-                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
+                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, qa, "append_testcase")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     for chunk in client.send_message("a2", prompt, with_chat_break=False):
@@ -339,8 +339,8 @@ def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
+def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
     retry_cnt = 0
@@ -399,7 +399,7 @@ def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solu
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
+def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa):
     responses = []
     rets = []
     codes = []
@@ -426,17 +426,17 @@ def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_t
             ret = None
             for step in range(3):
                 if step == 0: # human reply
-                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")
+                    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, "reply")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
                 elif step == 1: # document
-                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
+                    prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, status, user_out, qa, "solution")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
                 elif step == 2: # testcase
-                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
+                    prompt = buildPrompt({'item': ret, 'problemId': judge_result['problemId'], 'status': ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, status, user_out, qa, "append_testcase")
                     print('step: ', step, flush=True)
                     print('prompt:', prompt, flush=True)
                     res = chatbot.get_answer(prompt)['content']
@@ -467,8 +467,8 @@ def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_t
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
+def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "<|system|>\n<|end|>\n"
     if isinstance(prompt, list):
@@ -497,12 +497,11 @@ def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, 
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToVicuna(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
-    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
+def sendToVicuna(id, judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type):
+    prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "### Human: " + prompt + "\n\n### Assistant:\n"
     responses = []
-    retry_cnt = 0
     cnt = len(tokenizer.tokenize(inputs))
     res = []
     for i in range(reply_count):
@@ -533,7 +532,6 @@ def sendToCodeLLAMA(id, judge_result, nanti_status_id, description, code_to_fix,
         inputs += "[INST]\n" + prompt + "\n[/INST]\n"
     inputs += "```c++\n#include"
     responses = []
-    retry_cnt = 0
     cnt = len(tokenizer.tokenize(inputs))
     res = []
     for i in range(reply_count):
