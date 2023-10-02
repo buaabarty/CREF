@@ -629,6 +629,8 @@ def process():
                 result = sendToCodeLLAMA(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             elif engine == 'starchat':
                 result = sendToStarChat(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
+            elif engine == 'vicuna':
+                result = sendToVicuna(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             else:
                 result = sendToCodeModel(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
         add_almost = False
