@@ -13,6 +13,7 @@ from bardapi import Bard
 from prompts import *
 from utils import *
 import tutorcode_api
+import distance
 #from transformers import pipeline
 #from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSeq2SeqLM
 #from auto_gptq import AutoGPTQForCausalLM
@@ -23,13 +24,13 @@ engine = "gpt-3.5-turbo-0613"
 temperature = 1.0
 prompt_type = None
 print('sys.argv is ', sys.argv)
-if len(sys.argv) > 2:
-    reply_count = int(sys.argv[2])
+if len(sys.argv) > 1:
+    reply_count = int(sys.argv[1])
     print('reply count is', reply_count)
-    if len(sys.argv) > 3:
-        prompt_type = sys.argv[3]
-        if len(sys.argv) > 4:
-            engine = sys.argv[4]
+    if len(sys.argv) > 2:
+        prompt_type = sys.argv[2]
+        if len(sys.argv) > 3:
+            engine = sys.argv[3]
 else:
     reply_count = 5
 
@@ -591,6 +592,8 @@ def process():
     total = 0
     almost_correct = 0
     total_pass = 0
+    base_rps = 0
+    real_rps = 0
     for id in range(4, 1240):
         item = tutorcode_api.fetch_data(id)
         qa = item['tutorGuidance']
@@ -600,7 +603,9 @@ def process():
         judge_result = item['judgeResult']
         status_id = item['statusId']
         user_out = item['userOut']
+        ground_truth = item['groudTruthCode']
         status = None
+        base_rps += distance.calc_dist(code_to_fix, ground_truth)
         for item in judge_result['notac']:
             if item['nantiStatusId'] == status_id:
                 status = OJ_STATUSES[item['statusFlag']]
@@ -628,13 +633,14 @@ def process():
                 result = sendToCodeModel(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
         add_almost = False
         print(result)
-        for i in range(min(reply_count, len(result[1]))):
+        for i in range(reply_count):
             if result[1][i]['statusCode'] == 4:
                 add_almost = True
                 total_pass += 1
+            real_rps += distance.calc_dist(code_to_fix, result[0][i])
         if add_almost:
             almost_correct += 1
         total += 1
-        print('TOP-5: %d(%.1f\\%%), AVG-5: %.1f(%.1f\\%%) & %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, total))
+        print('TOP-5: %d(%.1f\\%%), AVG-5: %.1f(%.1f\\%%), RPSR: %.3f TOT: %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, real_rps / reply_count / base_rps, total))
 if __name__ == "__main__":
     process()

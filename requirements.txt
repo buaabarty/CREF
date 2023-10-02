@@ -6,3 +6,5 @@ openai
 langdetect
 colorama
 tiktoken
+clang
+zss

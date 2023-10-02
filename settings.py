@@ -4,3 +4,4 @@ bard_tokens = ['asdfasdfsdf'] # Bard cookie token see as https://github.com/dsda
 # if do not use local model cache, set model_dir to ''
 model_dir = "/root/autodl-tmp/"
 # model_dir = ''
+llvm_dir = "/usr/lib/llvm-16/lib/libclang.so.1"

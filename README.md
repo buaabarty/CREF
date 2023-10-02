@@ -2,9 +2,16 @@
 CREF codes with the description of benchmark TutorCode
 
 # preparement
+
+1. You should install llvm-16 for calculating RPSR results, and set the llvm directory like `/usr/lib/llvm-16/lib/libclang.so.1` within `settings.py`.
+
+2. Install python libraries:
+
 ```
 pip install -r requirements.txt
 ```
+
+3. Set the values in the `settings.py`, such as OpenAI api_key.
 
 # RQ-1
 ```
