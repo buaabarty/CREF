@@ -24,41 +24,26 @@ python3 experiment.py 12 5 default replit
 
 # RQ-2
 ```
-python3 experiment.py 13 5 reply gpt-4 
+python3 experiment.py 13 5 reply gpt-4
+python3 experiment.py 14 5 solution gpt-4
+python3 experiment.py 15 5 testcase gpt-4
+python3 experiment.py 16 5 reply_and_solution gpt-4
+python3 experiment.py 17 5 reply_and_testcase gpt-4
+python3 experiment.py 18 5 solution_and_testcase gpt-4
+python3 experiment.py 19 5 reply_and_solution_and_testcase4 gpt-4
+```
+
+Other LLM can replace `gpt-4` with correseponding model name.
+
+# RQ-3
+```
+python3 experiment.py 20 5 interactive gpt-4
+python3 experiment.py 21 5 interactive gpt-3.5-turbo
+python3 experiment.py 22 5 interactive claude
+python3 experiment.py 23 5 interactive bard
+python3 experiment.py 24 5 interactive codellama
 ```
 
 # TutorCode API
 
-GET http://tutorcode.org/item/${id}
-
-RESPONSE
-
-```
-{
-    'id': id,
-    'incorrectCode': '...',
-    'problemId': 1,
-    'problemDescription': '...',
-    'judgeResult': {...},
-    'tutorGuidance': '...',
-    'solutionDescription': '...',
-    'groundTruthCode': '...',
-}
-```
-
-POST http://tutorcode.org/judge
-
-```
-{
-    'code': '...',
-    'problemId': 1
-}
-```
-
-RESPONSE
-
-```
-{
-    'judgeResult': {...}
-}
-```
+The usage of TutorCode API refers to the source code `tutorcode_api.py`.

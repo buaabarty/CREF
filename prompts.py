@@ -1,4 +1,3 @@
-from asts import *
 from utils import *
 
 type_name = {
@@ -75,17 +74,6 @@ def buildSolutionPrompt(judge_result, description, code_to_fix, solution):
     else:
         prompt = append_prompt
     prompt += "This is a solution to the problem:\n\n" + solution + "\n\n"
-    prompt += "You are a software engineer. Can you repair the incorrect code?\n"
-    return prompt
-
-def buildAstPrompt(judge_result, description, code_to_fix, filepath):
-    prompt = "This is a programming problem description:\n" + description + "\n"
-    if judge_result.get('fileName', None) is not None:
-        prompt += "Your program should use file input and output. Read the input from a file named '" + judge_result['fileName'] + ".in' and write the output to a file named '" + judge_result['fileName'] + ".out'.\n\n"
-    prompt += "### Time Limit\n" + str(judge_result['timeLimit']) + "ms\n\n"
-    prompt += "### Memory Limit\n" + str(judge_result['memoryLimit']) + "KB\n\n"
-    prompt += "This is an incorrect code to the problem:\n```c++\n" + code_to_fix + "```\n\n"
-    prompt += "This is the ast of the incorrect code:\n```\n" + get_ast(filepath) + "```\n\n"
     prompt += "You are a software engineer. Can you repair the incorrect code?\n"
     return prompt
 
@@ -528,8 +516,6 @@ def buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solutio
         return buildOneReplyPrompt(judge_result, nanti_status_id, description, code_to_fix, qa)
     elif prompt_type == "solution":
         return buildSolutionPrompt(judge_result, description, code_to_fix, solution)
-    elif prompt_type == "ast":
-        return buildAstPrompt(judge_result, description, code_to_fix, filepath)
     elif prompt_type == "reply_and_testcase":
         return buildOneReplyAndTestcasePrompt(judge_result, nanti_status_id, description, code_to_fix, status, qa)
     elif prompt_type == "judge_result":

@@ -54,10 +54,10 @@ def all_whitespace(str):
     return True
 
 def output_self():
-    script_path = os.path.abspath(__file__)  # 获取当前脚本的绝对路径
+    script_path = os.path.abspath(__file__)
     with open(script_path, "r", encoding="utf-8") as f:
-        content = f.read()  # 读取脚本内容
-    print(content)  # 输出脚本内容
+        content = f.read()
+    print(content)
 
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     """Returns the number of tokens used by a list of messages."""
@@ -91,15 +91,12 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     return num_tokens
 
 def strings_are_same_except_blank_lines(s1, s2):
-    # 将字符串按行分割，过滤掉空行，然后再合并成字符串
     s1_no_blank_lines = ''.join(line for line in s1.splitlines() if line.strip())
     s2_no_blank_lines = ''.join(line for line in s2.splitlines() if line.strip())
 
-    # 判断两个字符串是否相等
     return s1_no_blank_lines == s2_no_blank_lines
 
 def parse_warning(warning_json):
-    # 将JSON字符串转化为字典
     try:
         warning_dicts = json.loads(warning_json)
     except Exception as e:
@@ -137,9 +134,7 @@ def extract_code(response):
     return response
 
 def extract_last_cpp_code(s: str) -> str:
-    # 寻找所有匹配的代码块
     matches = re.findall(r'```c\+\+(.*?)```', s, re.DOTALL)
-    # 返回最后一个匹配的代码块，如果没有找到匹配的代码块则返回空字符串
     return matches[-1].strip() if matches else ""
 
 def format_extra(ret, case_cnt):

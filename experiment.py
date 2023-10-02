@@ -615,17 +615,13 @@ def process(suffix = "", select_ids = None):
     almost_correct = 0
     total_pass = 0
     ac_more = 0
-    for id in range(1239):
+    for id in range(1, 1240):
         item = tutorcode_api.fetch_data(id)
-        problem_id = item['problem_id']
         qa = item['tutorGuidance']
         description = item['problemDescription']
         solution = item['solutionDescription']
-        samples = []
         code_to_fix = item['incorrectCode']
-        stdin = stdout = userout = ''
-        judge_result = item['judgeStatus']
-        stauts = judge_result['status']
+        judge_result = item['judgeResult']
         nanti_status_id = judge_result['status_id']
         if prompt_type == "interactive":
             if 'gpt' in engine:
