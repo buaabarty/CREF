@@ -618,6 +618,7 @@ def process():
         judge_result = item['judgeResult']
         status_id = item['statusId']
         user_out = item['userOut']
+        status = None
         for item in judge_result['notac']:
             if item['nantiStatusId'] == status_id:
                 status = OJ_STATUSES[item['statusFlag']]
@@ -648,12 +649,6 @@ def process():
             if result[i]['statusCode'] == 4:
                 add_almost = True
                 total_pass += 1
-            now_pass = 0
-            print(result[i])
-            for it in result[i]['extra']:
-                print(it)
-                if it['statusCode'] == 4:
-                    now_pass += 1
         if add_almost:
             almost_correct += 1
         total += 1
