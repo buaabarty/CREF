@@ -616,28 +616,33 @@ def process():
         solution = item['solutionDescription']
         code_to_fix = item['incorrectCode']
         judge_result = item['judgeResult']
+        status_id = item['statusId']
+        user_out = item['userOut']
+        for item in judge_result['notac']:
+            if item['nantiStatusId'] == status_id:
+                status = OJ_STATUSES[item['statusFlag']]
         if prompt_type == "interactive":
             if 'gpt' in engine:
-                result = sendToGPTInteractive(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToGPTInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             elif engine == 'bard':
-                result = sendToBardInteractive(id, judge_result, description, code_to_fix, solution, qa)
+                result = sendToBardInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa)
             elif engine == 'claude':
-                result = sendToClaudeInteractive(id, judge_result, description, code_to_fix, solution, qa)
+                result = sendToClaudeInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa)
             elif engine == 'codellama':
-                result = sendToCodeLLAMAInteractive(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToCodeLLAMAInteractive(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
         else:
             if 'gpt' in engine:
-                result = sendToGPT(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToGPT(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             elif engine == 'bard':
-                result = sendToBard(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToBard(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             elif engine == 'claude':
-                result = sendToClaude(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToClaude(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             elif engine == 'codellama':
-                result = sendToCodeLLAMA(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToCodeLLAMA(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             elif engine == 'starchat':
-                result = sendToStarChat(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToStarChat(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
             else:
-                result = sendToCodeModel(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToCodeModel(id, judge_result, status_id, description, code_to_fix, solution, status, user_out, qa, prompt_type)
         add_almost = False
         for i in range(min(reply_count, len(result))):
             if result[i]['statusCode'] == 4:
