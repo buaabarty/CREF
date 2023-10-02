@@ -81,12 +81,9 @@ delay_time = 0.001
 timeout = 20
 poe_token_cnt = 0
 
-def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
-    old_response, old_ret, old_prompt, old_origin_response = result
+def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     history = []
-    if old_prompt != "" and old_prompt != prompt:
-        old_response, old_ret, old_prompt, old_origin_response = [], [], "", []
     if isinstance(prompt, list):
         for pmt in prompt:
             history.append({'role': 'user', 'content': pmt})
@@ -97,7 +94,7 @@ def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, s
         max_token = 7800
     else:
         max_token = 4000
-    todo = reply_count - len(old_response)
+    todo = reply_count
     while True:
         try:
             start_time = time.time()
@@ -131,19 +128,17 @@ def sendToGPT(result, judge_result, nanti_status_id, description, code_to_fix, s
     for item in origin_response:
         now_code = extract_code(item)
         response.append(now_code)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
-    return [old_response + response, old_ret + ret, prompt, old_origin_response + origin_response]
+        ret.append(tutorcode_api.judge(id, now_code))
+    return [response, ret, prompt, origin_response]
 
-def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "/*\n" + prompt + "\n*/\n#"
     if engine == "incoder":
         inputs = "<| file ext=.cpp |>\n" + inputs
     responses = []
-    retry_cnt = 0
     cnt = len(tokenizer.tokenize(inputs))
-    res = []
     for i in range(reply_count):
         if cnt > 1900:
             output = [{'generated_text': '#'}]
@@ -160,8 +155,7 @@ def sendToCodeModel(result, judge_result, nanti_status_id, description, code_to_
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToGPTInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
-    old_response, old_ret, old_prompt, old_origin_response = result
+def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")}]
     if engine.startswith('gpt-4'):
         max_token = 7800
@@ -182,9 +176,11 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
             inside_old_response = old_origin_response[i]['message']['content']
         history.append({'role': 'assistant', 'content': inside_old_response})
         inside_res = [inside_old_response]
-        for j in range(2):
+        for j in range(3):
             print('step: ', j, flush=True)
             if j == 0:
+                prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")
+            elif j == 1:
                 prompt = buildPrompt(judge_result, nanti_status_id, None, code_to_fix, solution, qa, "solution")
             else:
                 prompt = buildPrompt({'item': inside_ret, 'problemId': judge_result['problemId'], 'status': inside_ret['statusCode']}, nanti_status_id, None, code_to_fix, solution, qa, "append_testcase")
@@ -224,7 +220,7 @@ def sendToGPTInteractive(result, judge_result, nanti_status_id, description, cod
         old_ret[i] = inside_ret
     return [old_response, old_ret, history, old_origin_response]
 
-def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
+def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
@@ -289,7 +285,7 @@ def sendToClaude(result, judge_result, nanti_status_id, description, code_to_fix
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
+def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
     responses = []
     retry_cnt = 0
     rets = []
@@ -357,7 +353,7 @@ def sendToClaudeInteractive(result, judge_result, nanti_status_id, description, 
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
+def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
@@ -417,7 +413,7 @@ def sendToBard(result, judge_result, nanti_status_id, description, code_to_fix, 
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToBardInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
+def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
     responses = []
     rets = []
     codes = []
@@ -485,7 +481,7 @@ def sendToBardInteractive(result, judge_result, nanti_status_id, description, co
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "<|system|>\n<|end|>\n"
@@ -515,7 +511,7 @@ def sendToStarChat(result, judge_result, nanti_status_id, description, code_to_f
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToVicuna(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "### Human: " + prompt + "\n\n### Assistant:\n"
@@ -539,7 +535,7 @@ def sendToVicuna(result, judge_result, nanti_status_id, description, code_to_fix
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToCodeLLAMA(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = ""
@@ -570,7 +566,7 @@ def sendToCodeLLAMA(result, judge_result, nanti_status_id, description, code_to_
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMAInteractive(result, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
     old_response, old_ret, old_prompt, old_origin_response = result
     inputs_lst = ['' for i in range(reply_count)]
     for i in range(reply_count):
@@ -625,26 +621,26 @@ def process(suffix = "", select_ids = None):
         nanti_status_id = judge_result['status_id']
         if prompt_type == "interactive":
             if 'gpt' in engine:
-                result = sendToGPTInteractive(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToGPTInteractive(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'bard':
-                result = sendToBardInteractive(result, judge_result, description, code_to_fix, solution, qa)
+                result = sendToBardInteractive(id, judge_result, description, code_to_fix, solution, qa)
             elif engine == 'claude':
-                result = sendToClaudeInteractive(result, judge_result, description, code_to_fix, solution, qa)
+                result = sendToClaudeInteractive(id, judge_result, description, code_to_fix, solution, qa)
             elif engine == 'codellama':
-                result = sendToCodeLLAMAInteractive(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToCodeLLAMAInteractive(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
         else:
             if 'gpt' in engine:
-                result = sendToGPT(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToGPT(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'bard':
-                result = sendToBard(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToBard(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'claude':
-                result = sendToClaude(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToClaude(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'codellama':
-                result = sendToCodeLLAMA(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToCodeLLAMA(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             elif engine == 'starchat':
-                result = sendToStarChat(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToStarChat(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
             else:
-                result = sendToCodeModel(result, judge_result, description, code_to_fix, solution, qa, prompt_type)
+                result = sendToCodeModel(id, judge_result, description, code_to_fix, solution, qa, prompt_type)
         old_passed = -1
         for item in judge_result['notac']:
             if item['nantiStatusId'] == nanti_status_id:
