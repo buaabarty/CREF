@@ -53,12 +53,6 @@ def all_whitespace(str):
             return False
     return True
 
-def output_self():
-    script_path = os.path.abspath(__file__)
-    with open(script_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    print(content)
-
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     """Returns the number of tokens used by a list of messages."""
     try:

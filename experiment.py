@@ -605,7 +605,7 @@ def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, c
         old_ret[i] = inside_ret
     return [old_response, old_ret, inputs_lst, old_origin_response]
 
-def process(suffix = "", select_ids = None):
+def process():
     total = 0
     almost_correct = 0
     total_pass = 0
@@ -654,5 +654,4 @@ def process(suffix = "", select_ids = None):
         total += 1
         print('TOP-5: %d(%.1f\\%%), AVG-5: %.1f(%.1f\\%%) & %d' % (almost_correct, almost_correct * 100 / total, total_pass / reply_count, total_pass * 100 / reply_count / total, total))
 if __name__ == "__main__":
-    output_self()
-    process(sys.argv[1])
+    process()
