@@ -7,7 +7,6 @@ def fetch_data(id):
 
     response = requests.get(url, headers=headers)
 
-    # 检查响应是否成功
     if response.status_code == 200:
         return response.json()
     else:
@@ -22,7 +21,6 @@ def get_testcase(problem_id, case_id):
 
     response = requests.get(url, headers=headers)
 
-    # 检查响应是否成功
     if response.status_code == 200:
         return response.json()
     else:
@@ -42,7 +40,6 @@ def judge(id, code):
 
     response = requests.post(url, headers=headers, json=payload)
 
-    # 检查响应是否成功
     if response.status_code == 200:
         return response.json()
     else:

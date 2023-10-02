@@ -131,7 +131,7 @@ def sendToGPT(id, judge_result, nanti_status_id, description, code_to_fix, solut
         ret.append(tutorcode_api.judge(id, now_code))
     return [response, ret, prompt, origin_response]
 
-def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "/*\n" + prompt + "\n*/\n#"
@@ -151,11 +151,11 @@ def sendToCodeModel(id, judge_result, nanti_status_id, description, code_to_fix,
         now_code = extract_code(item.split('\n*/\n')[-1])
         response.append(now_code)
         print(now_code, flush=True)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(id, now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     history = [{'role': 'user', 'content': buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, "reply")}]
     if engine.startswith('gpt-4'):
         max_token = 7800
@@ -211,7 +211,7 @@ def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to
             inside_res.append(res)
             history.append({'role': 'assistant', 'content': res})
             now_code = extract_code(res)
-            inside_ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+            inside_ret = tutorcode_api.judge(id, now_code)
             if inside_ret['statusCode'] == 4 or j == 1:
                 break
             inside_ret['extra'] = format_extra(inside_ret, case_max_cnt[judge_result['problemId']])
@@ -220,7 +220,7 @@ def sendToGPTInteractive(id, judge_result, nanti_status_id, description, code_to
         old_ret[i] = inside_ret
     return [old_response, old_ret, history, old_origin_response]
 
-def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
+def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
@@ -281,7 +281,7 @@ def sendToClaude(id, judge_result, nanti_status_id, description, code_to_fix, so
         else:
             now_code = extract_code(item)
         response.append(now_code)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(id, now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
@@ -326,7 +326,7 @@ def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code
                 print(res, flush=True)
                 response.append(res)
                 now_code = extract_code(res)
-                ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+                ret = tutorcode_api.judge(id, now_code)
                 ret_in.append(ret)
                 if ret['statusCode'] == 4 or step == 2:
                     break
@@ -353,7 +353,7 @@ def sendToClaudeInteractive(id, judge_result, nanti_status_id, description, code
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath=""):
+def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     responses = []
@@ -409,7 +409,7 @@ def sendToBard(id, judge_result, nanti_status_id, description, code_to_fix, solu
         else:
             now_code = extract_code(item)
         response.append(now_code)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(id, now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
@@ -459,7 +459,7 @@ def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_t
                 print(res, flush=True)
                 response.append(res)
                 now_code = extract_code(res)
-                ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+                ret = tutorcode_api.judge(id, now_code)
                 if ret['statusCode'] == 4 or step == 2:
                     break
                 ret['extra'] = format_extra(ret, case_max_cnt[judge_result['problemId']])
@@ -481,7 +481,7 @@ def sendToBardInteractive(id, judge_result, nanti_status_id, description, code_t
     print([codes, rets, prompt, responses])
     return [codes, rets, prompt, responses]
 
-def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "<|system|>\n<|end|>\n"
@@ -507,11 +507,11 @@ def sendToStarChat(id, judge_result, nanti_status_id, description, code_to_fix, 
         now_code = extract_code(item.split('<|assistant|>')[-1])
         response.append(now_code)
         print(now_code, flush=True)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(id, now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToVicuna(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToVicuna(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = "### Human: " + prompt + "\n\n### Assistant:\n"
@@ -531,11 +531,11 @@ def sendToVicuna(id, judge_result, nanti_status_id, description, code_to_fix, so
         now_code = extract_code(item.split('\n### Assistant:\n')[-1])
         response.append(now_code)
         print(now_code, flush=True)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(id, now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMA(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToCodeLLAMA(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type):
     prompt = buildPrompt(judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type)
     print('prompt:', prompt, flush=True)
     inputs = ""
@@ -562,11 +562,11 @@ def sendToCodeLLAMA(id, judge_result, nanti_status_id, description, code_to_fix,
         now_code = extract_last_cpp_code(item.split('\n[/INST]')[-1])
         response.append(now_code)
         print('code:', now_code, flush=True)
-        ret.append(tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code))
+        ret.append(tutorcode_api.judge(id, now_code))
     print(ret)
     return [response, ret, prompt, responses]
 
-def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa, prompt_type, filepath = ""):
+def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, code_to_fix, solution, qa):
     old_response, old_ret, old_prompt, old_origin_response = result
     inputs_lst = ['' for i in range(reply_count)]
     for i in range(reply_count):
@@ -594,7 +594,7 @@ def sendToCodeLLAMAInteractive(id, judge_result, nanti_status_id, description, c
             print(res, flush=True)
             now_code = extract_last_cpp_code(res.split('\n[/INST]')[-1])
             print(now_code, flush=True)
-            inside_ret = tutorcode_api.judge(judge_result['problemId'], judge_result['timeLimit'], judge_result['memoryLimit'], case_max_cnt[judge_result['problemId']], judge_result.get('fileName', None), now_code, True)
+            inside_ret = tutorcode_api.judge(id, now_code)
             old_origin_response[i] = res
             if inside_ret['statusCode'] == 4 or j == 1:
                 break
