@@ -594,7 +594,7 @@ def process():
     total_pass = 0
     base_rps = 0
     real_rps = 0
-    for id in range(4, 1240):
+    for id in range(1, 1240):
         item = tutorcode_api.fetch_data(id)
         qa = item['tutorGuidance']
         description = item['problemDescription']
