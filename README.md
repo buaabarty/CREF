@@ -23,6 +23,7 @@ where `{id}` represents the unique identifier of the sample within the TutorCode
     "tutorGuidance": "...",  // the tutor guidance in Markdown format
     "solutionDescription": "...", // the solution description in Markdown format
     "groudTruthCode": "...",  // the ground truth corrected code
+    "statusId": 12340173, // the status id of the incorrect code
     "userOut": "4\n",  // the output of the incorrect code for the first failing test case
 }
 ```
