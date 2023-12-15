@@ -12,7 +12,7 @@ The dataset can be **accessed** through the provided script (without additional 
 python3 tutorcode_api.py fetch {id}
 ```
 
-where `{id}` represents the unique identifier of the sample within the TutorCode, ranging from `1` to `1239`. The script includes a pre-configured `API_KEY`. After execute `python3 tutorcode_api.py fetch 611`, the result shows in [611.json](611.json). The structures are as follow:
+where `{id}` represents the unique identifier of the sample within the TutorCode, ranging from `1` to `1239`. The script includes a pre-configured `API_KEY`. After executing the command `python3 tutorcode_api.py fetch 611`, the outcome is displayed in the file [611.json](611.json). The structure of the results is as follow:
 
 ```
 {
@@ -37,13 +37,13 @@ Additionally, the subsequent figure displays the count of differing code segment
 ![Diff Hunks](figures/tutorcode_hunks.png)
 
 ### B. Fetch test cases
-To minimize the risk of data leakage, we provide a separate script to fetch test cases:
+To mitigate the risk of data leakage, a dedicated command is available for retrieving test cases:
 
 ```
 python3 tutorcode_api.py testcase {problem_id} {case_id}
 ```
 
-For example, after we execute `python3 tutorcode_api.py testcase 62650 5`, the result shows as bellow:
+For instance, executing `python3 tutorcode_api.py testcase 62650 5` yields the following result:
 
 ```
 {
@@ -53,13 +53,13 @@ For example, after we execute `python3 tutorcode_api.py testcase 62650 5`, the r
 ```
 
 ### C. Judge codes
-The generated code can be judged through the following script:
+The script below is used to judge the generated code:
 
 ```
 python3 tutorcode_api.py judge {problem_id} {code_file}
 ```
 
-For example, we can execute `python3 tutorcode_api.py judge 62650 62650.cpp` to judge the code in [62650.cpp](62650.cpp). The judge result is the same as the `judgeResult` field in [611.json](611.json).
+For example, evaluating the code in [62650.cpp](62650.cpp) is done by executing `python3 tutorcode_api.py judge 62650 62650.cpp`. The evaluation result corresponds to the `judgeResult` field in [611.json](611.json).
 
 ## II) Requirements
 
