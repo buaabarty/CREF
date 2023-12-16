@@ -1,9 +1,9 @@
 # TutorCode & CREF
 
 ## I) TutorCode
-The benchmark **Tutorcode** consists of 1,239 incorrect C++ codes written by 427 distinct authors and associated information such as tutor guidance, solution description, failing test cases and the ground truth corrected code.
+The benchmark **Tutorcode** consists of 1,239 incorrect C++ codes written by 427 distinct authors and associated information such as tutor guidance, solution description, failing test cases, and the ground truth corrected code.
 
-> To prevent data leakage, the dataset is not placed directly in this directory. TutorCode can be accessed via the API using the script provided below. While it is possible to store the data locally at your convenience, uploading it to the public web is prohibited.
+> The TutorCode is not placed directly in this directory to prevent data leakage. TutorCode can be accessed via the API using the script provided below. While storing the data locally at your convenience is possible, uploading it to the public web is prohibited.
 
 ### A. Fetch data
 
@@ -12,7 +12,7 @@ The dataset can be **accessed** through the provided script (without additional 
 python3 tutorcode_api.py fetch {id}
 ```
 
-where `{id}` represents the unique identifier of the sample within the TutorCode, ranging from `1` to `1239`. The script includes a pre-configured `API_KEY`. After executing the command `python3 tutorcode_api.py fetch 611`, the outcome is displayed in the file [611.json](611.json). The structure of the results is as follow:
+where `{id}` represents the unique identifier of the sample within the TutorCode, ranging from `1` to `1239`. The script includes a pre-configured `API_KEY`. After executing the command `python3 tutorcode_api.py fetch 611`, the outcome is displayed in the file [611.json](611.json). The structure of the results is as following:
 
 ```
 {
@@ -28,11 +28,15 @@ where `{id}` represents the unique identifier of the sample within the TutorCode
 }
 ```
 
-TutorCode includes incorrect codes samples that vary widely in accuracy, from nearly correct to those requiring substantial modification. The following figure illustrates the count of distinct functions in the incorrect codes compared to the ground truth corrected codes within TutorCode.
+Compared to other benchmarks, TutorCode exhibits greater complexity. This is evidenced by over half of the incorrect codes in TutorCode encompassing more than one function. Each set of global variables in a single incorrect code is considered equivalent to a function for this analysis. The accompanying figure presents the distribution of function counts across all incorrect codes within TutorCode.
+
+![All Funcs](figures/tutorcode_funcs_all.png)
+
+TutorCode includes incorrect code samples that vary widely in accuracy, from nearly correct to those requiring substantial modification. The following figure illustrates the count of distinct functions in the incorrect codes compared to the ground truth corrected codes within TutorCode.
 
 ![Diff Funcs](figures/tutorcode_funcs.png)
 
-Additionally, the subsequent figure displays the count of differing code segments (hunks) between the incorrect codes and the ground truth corrected codes in TutorCode.
+Additionally, the subsequent figure displays the count of differing code segments (hunks) between the incorrect codes, and the ground truth corrected codes in TutorCode.
 
 ![Diff Hunks](figures/tutorcode_hunks.png)
 
@@ -74,13 +78,13 @@ pip install -r requirements.txt
 3. Set the values in the `settings.py`, such as OpenAI api_key.
 
 ## III) Experiments
-**C**onversational **RE**pair **F**ramework, an LLM-based conversational program repair framework.
+**C**onversational **RE**pair **F**ramework is an LLM-based conversational program repair framework.
 
 ### A) Sec. 3.3 (Dataset Statistics)
 ```
 python3 tutorcode_statistic.py
 ```
-This script calcuates the statistics of TutorCode dataset, including the code length and diff hunks of incorrect codes.
+This script calculates the statistics of the TutorCode dataset, including the code length and diff hunks of incorrect codes.
 
 ### B) Sec. 4.1 (RQ1: Realistic Performance of LLMs)
 
