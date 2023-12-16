@@ -12,19 +12,19 @@ The dataset can be **accessed** through the provided script (without additional 
 python3 tutorcode_api.py fetch {id}
 ```
 
-where `{id}` represents the unique identifier of the sample within the TutorCode, ranging from `1` to `1239`. The script includes a pre-configured `API_KEY`. After executing the command `python3 tutorcode_api.py fetch 611`, the outcome is displayed in the file [611.json](611.json). The structure of the results is as following:
+where `{id}` represents the unique identifier of the sample within the TutorCode, ranging from `1` to `1239`. The script includes a pre-configured `API_KEY`. After executing the command `python3 tutorcode_api.py fetch 611`, the outcome is displayed in the file [651.json](651.json). The structure of the results is as follows:
 
 ```
 {
     "incorrectCode": "...",  // the incorrect code to fix
-    "problemId": 62650,  // there are 35 distinct problem ids
+    "problemId": 62516,  // there are 35 distinct problem ids
     "problemDescription": "...", // the problem description in Markdown format
     "judgeResult": {},  // judge result json, including compiling erorr messages, count of test cases, execution time and memory usage for each test case, etc.
     "tutorGuidance": "...",  // the tutor guidance in Markdown format
     "solutionDescription": "...", // the solution description in Markdown format
     "groudTruthCode": "...",  // the ground truth corrected code
-    "statusId": 12340173, // the status id of the incorrect code
-    "userOut": "4\n",  // the output of the incorrect code for the first failing test case
+    "statusId": 13041378, // the status id of the incorrect code
+    "userOut": "2\n\n",  // the output of the incorrect code for the first failing test case
 }
 ```
 
@@ -47,12 +47,12 @@ To mitigate the risk of data leakage, a dedicated command is available for retri
 python3 tutorcode_api.py testcase {problem_id} {case_id}
 ```
 
-For instance, executing `python3 tutorcode_api.py testcase 62650 5` yields the following result:
+For instance, executing `python3 tutorcode_api.py testcase 62516 1` yields the following result:
 
 ```
 {
-    "input": "3 3 2 2 4 5\n1 -100 1\n-100 0 -100\n1 -100 1\n",
-    "output": "-1\n"
+    "input": "3 3\n2 -4 1\n-1 2 1\n4 -2 2\n",
+    "output": "6\n"
 }
 ```
 
@@ -63,7 +63,7 @@ The script below is used to judge the generated code:
 python3 tutorcode_api.py judge {problem_id} {code_file}
 ```
 
-For example, evaluating the code in [62650.cpp](62650.cpp) is done by executing `python3 tutorcode_api.py judge 62650 62650.cpp`. The evaluation result corresponds to the `judgeResult` field in [611.json](611.json).
+For example, evaluating the code in [62516.cpp](62516.cpp) is done by executing `python3 tutorcode_api.py judge 651 62516.cpp`, resulting in [62516.json](62516.json). The definition of `statusCode` is available in the `OJ_STATUSES` dictionary within the [utils.py](utils.py) file.
 
 ## II) Requirements
 

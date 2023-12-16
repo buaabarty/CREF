@@ -1,0 +1,62 @@
+{
+    "status": "finished",
+    "statusCode": 4,
+    "total": 6,
+    "passed": 6,
+    "compileLog": "",
+    "compileJson": "",
+    "compileErrorLog": "",
+    "time": 1,
+    "memory": 3520,
+    "extra": [
+        {
+            "case": 1,
+            "runTime": 1,
+            "judgeTime": 0,
+            "memory": 3388,
+            "stdout&stderr": "",
+            "statusCode": 4
+        },
+        {
+            "case": 2,
+            "runTime": 1,
+            "judgeTime": 0,
+            "memory": 3516,
+            "stdout&stderr": "",
+            "statusCode": 4
+        },
+        {
+            "case": 3,
+            "runTime": 1,
+            "judgeTime": 0,
+            "memory": 3520,
+            "stdout&stderr": "",
+            "statusCode": 4
+        },
+        {
+            "case": 4,
+            "runTime": 1,
+            "judgeTime": 0,
+            "memory": 3388,
+            "stdout&stderr": "",
+            "statusCode": 4
+        },
+        {
+            "case": 5,
+            "runTime": 1,
+            "judgeTime": 0,
+            "memory": 3444,
+            "stdout&stderr": "",
+            "statusCode": 4
+        },
+        {
+            "case": 6,
+            "runTime": 1,
+            "judgeTime": 0,
+            "memory": 3388,
+            "stdout&stderr": "",
+            "statusCode": 4
+        }
+    ],
+    "diffOutput": ""
+}

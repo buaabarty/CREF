@@ -1,0 +1,89 @@
+{
+    "incorrectCode": "#include<iostream>\n#include<cmath>\n#include<cstdio>\n#include<string>\nusing namespace std;\nint main(){\n    freopen(\"submatrix.in\",\"r\",stdin);\n    freopen(\"submatrix.out\",\"w\",stdout);\n    short a,b;\n    cin>>a>>b;\n    int aa[259][51];\n    for(int i=0;i<a;i++){\n        for(int j=0;j<b;j++){\n            cin>>aa[i][j];\n        }\n    }\n    int max=-100000;\n    int sum=0;\n    for(int i=0;i<a;i++){\n        for(int j=i;j<a;j++){\n            for(int k=0;k<b;k++){\n                for(int l=k;l<b;l++){\n                    sum=0;\n                    for(int p=i;p<j;p++){\n                        for(int q=k;q<l;q++){\n                            sum+=aa[p][q];\n                        }\n                    }\n                    if(sum>max){\n                        max=sum;\n                    }\n                }\n            }\n        }\n    }\n    cout<<max<<endl;\n    return 0;\n    \n}\n",
+    "problemId": 62516,
+    "problemDescription": "# Maximum Submatrix\nGiven an $n \times m$ matrix $A$, find a non-empty submatrix in $A$ such that the sum of its elements is maximized.\n\n### Input Format\n\nThe first line of the input contains two integers $n, m (1 \\leq n, m \\leq 50)$, representing the number of rows and columns of matrix $A$. The following $n$ lines, each with $m$ integers, represent the matrix $A_{i,j}(-1000 \\leq A_{i,j} \\leq 1000)$. Adjacent numbers are separated by a space.\n\n### Output Format\n\nOutput one line containing a single integer, representing the sum of elements in the largest submatrix in $A$.\n\n",
+    "judgeResult": {
+        "problemId": 62516,
+        "timeLimit": 2000,
+        "memoryLimit": 131072,
+        "fileName": "submatrix",
+        "case_cnt": 6,
+        "notac": [
+            {
+                "nantiStatusId": 13041378,
+                "compileErrorLog": "[{'kind': 'warning', 'locations': [{'finish': {'line': 7, 'file': 'Main.cpp', 'column': 37}, 'caret': {'line': 7, 'file': 'Main.cpp', 'column': 12}, 'start': {'line': 7, 'file': 'Main.cpp', 'column': 5}}], 'option': '-Wunused-result', 'option_url': 'https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-result', 'message': 'ignoring return value of \\u2018FILE* freopen(const char*, const char*, FILE*)\\u2019 declared with attribute \\u2018warn_unused_result\\u2019'}, {'kind': 'warning', 'locations': [{'finish': {'line': 8, 'file': 'Main.cpp', 'column': 39}, 'caret': {'line': 8, 'file': 'Main.cpp', 'column': 12}, 'start': {'line': 8, 'file': 'Main.cpp', 'column': 5}}], 'option': '-Wunused-result', 'option_url': 'https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-result', 'message': 'ignoring return value of \\u2018FILE* freopen(const char*, const char*, FILE*)\\u2019 declared with attribute \\u2018warn_unused_result\\u2019'}]",
+                "statusFlag": 6,
+                "extra": {
+                    "testcase": {
+                        "total": 10,
+                        "passed": 1
+                    },
+                    "time": [
+                        1,
+                        1,
+                        1,
+                        1,
+                        1,
+                        1
+                    ],
+                    "statuses": [
+                        6,
+                        6,
+                        6,
+                        4,
+                        6,
+                        6
+                    ],
+                    "memory": [
+                        3420,
+                        3396,
+                        3516,
+                        3396,
+                        3512,
+                        3424
+                    ]
+                },
+                "errorOnCase": 0
+            }
+        ],
+        "ac": {
+            "nantiStatusId": 13041417,
+            "compileErrorLog": "",
+            "statusFlag": 4,
+            "extra": {
+                "testcase": {
+                    "total": 5,
+                    "pass": 5
+                },
+                "time": [
+                    1,
+                    2,
+                    48,
+                    43,
+                    236
+                ],
+                "statuses": [
+                    4,
+                    4,
+                    4,
+                    4,
+                    4
+                ],
+                "memory": [
+                    3352,
+                    3380,
+                    3408,
+                    3496,
+                    3344
+                ],
+                "debug_info": null
+            },
+            "submitTime": 1673175094
+        }
+    },
+    "tutorGuidance": "24th line: Change < to <=\n\n25th line: Change < to <=\n",
+    "solutionDescription": "Enumerate the number of rows of the submatrix between $x_1$ and $x_2$, and the number of columns between $y_1$ and $y_2$, then count the sum within it, and update the current maximum value.\n\n",
+    "groudTruthCode": "#include<iostream>\n#include<cmath>\n#include<cstdio>\n#include<string>\nusing namespace std;\nint main(){\n    freopen(\"submatrix.in\",\"r\",stdin);\n    freopen(\"submatrix.out\",\"w\",stdout);\n    short a,b;\n    cin>>a>>b;\n    int aa[259][51];\n    for(int i=0;i<a;i++){\n        for(int j=0;j<b;j++){\n            cin>>aa[i][j];\n        }\n    }\n    int max=-100000;\n    int sum=0;\n    for(int i=0;i<a;i++){\n        for(int j=i;j<a;j++){\n            for(int k=0;k<b;k++){\n                for(int l=k;l<b;l++){\n                    sum=0;\n                    for(int p=i;p<=j;p++){\n                        for(int q=k;q<=l;q++){\n                            sum+=aa[p][q];\n                        }\n                    }\n                    if(sum>max){\n                        max=sum;\n                    }\n                }\n            }\n        }\n    }\n    cout<<max<<endl;\n    return 0;\n    \n}\n",
+    "statusId": 13041378,
+    "userOut": "2\n\n"
+}
