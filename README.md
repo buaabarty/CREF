@@ -1,7 +1,7 @@
 # TutorCode & CREF
 
 ## I) TutorCode
-The benchmark **Tutorcode** consists of 1,239 incorrect C++ codes written by 427 distinct authors and associated information such as tutor guidance, solution description, failing test cases, and the ground truth corrected code.
+The benchmark **Tutorcode** consists of 1,239 incorrect C++ codes written by 427 distinct students and associated information such as tutor guidance, solution description, failing test cases, and the ground truth corrected code.
 
 > The TutorCode is not placed directly in this directory to prevent data leakage. TutorCode can be accessed via the API using the script provided below. While storing the data locally at your convenience is possible, uploading it to the public web is prohibited.
 
