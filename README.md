@@ -84,7 +84,7 @@ pip install -r requirements.txt
 ```
 python3 tutorcode_statistic.py
 ```
-This script calculates the statistics of the TutorCode dataset, including the code length and diff hunks of incorrect codes.
+This script calculates the statistics of the TutorCode dataset, including the code length, and modified hunks of incorrect codes.
 
 ### B) Sec. 4.1 (RQ1: Realistic Performance of LLMs)
 
