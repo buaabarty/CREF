@@ -45,41 +45,7 @@
                 },
                 "errorOnCase": 0
             }
-        ],
-        "ac": {
-            "nantiStatusId": 13041417,
-            "compileErrorLog": "",
-            "statusFlag": 4,
-            "extra": {
-                "testcase": {
-                    "total": 5,
-                    "pass": 5
-                },
-                "time": [
-                    1,
-                    2,
-                    48,
-                    43,
-                    236
-                ],
-                "statuses": [
-                    4,
-                    4,
-                    4,
-                    4,
-                    4
-                ],
-                "memory": [
-                    3352,
-                    3380,
-                    3408,
-                    3496,
-                    3344
-                ],
-                "debug_info": null
-            },
-            "submitTime": 1673175094
-        }
+        ]
     },
     "tutorGuidance": "24th line: Change < to <=\n\n25th line: Change < to <=\n",
     "solutionDescription": "Enumerate the number of rows of the submatrix between $x_1$ and $x_2$, and the number of columns between $y_1$ and $y_2$, then count the sum within it, and update the current maximum value.\n\n",

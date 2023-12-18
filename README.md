@@ -78,15 +78,7 @@ pip install -r requirements.txt
 3. Set the values in the `settings.py`, such as OpenAI api_key.
 
 ## III) Experiments
-**C**onversational **RE**pair **F**ramework is an LLM-based conversational program repair framework.
-
-### A) Sec. 3.3 (Dataset Statistics)
-```
-python3 tutorcode_statistic.py
-```
-This script calculates the statistics of the TutorCode dataset, including the code length, and modified hunks of incorrect codes.
-
-### B) Sec. 4.1 (RQ1: Realistic Performance of LLMs)
+### A) Sec. 4.1 (RQ1: Realistic Performance of LLMs)
 
 ```
 python3 experiment.py 5 default gpt-4-0613
@@ -105,7 +97,7 @@ python3 experiment.py 5 default replit
 
 The scripts evaluate the repair capabilities of LLMs using the TutorCode benchmark. They assess performance based on several metrics: TOP-5, AVG-5, and RPSR. The final parameter specifies the model name of the LLM.
 
-### C) Sec. 4.2 (RQ2: Enhancements of Augmented Information)
+### B) Sec. 4.2 (RQ2: Enhancements of Augmented Information)
 
 ```
 python3 experiment.py 5 reply gpt-4-0613
@@ -119,7 +111,7 @@ python3 experiment.py 5 reply_and_solution_and_testcase4 gpt-4-0613
 
 The scripts assess the repair effectiveness of each augmented information set for `gpt-4-turbo`, using the same metrics as defined in RQ-1. For testing other LLMs such as `gpt-3.5-turbo-0613`, `claude`, `bard`, and `codellama`, one can substitute `gpt-4-0613` in the scripts with the respective LLM identifiers.
 
-### D) Sec. 4.3 (RQ3: Conversational Program Repair)
+### C) Sec. 4.3 (RQ3: Conversational Program Repair)
 
 ```
 python3 experiment.py 5 interactive gpt-4-0613
