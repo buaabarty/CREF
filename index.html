@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Paper</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .paper-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .authors {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .abstract {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .abstract h2 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .figure {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .figure img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .figure-caption {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .repository {
+            text-align: center;
+        }
+        .repository a {
+            display: inline-block;
+            background-color: #4a69bd;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .repository a:hover {
+            background-color: #3c5b9b;
+        }
+    </style>
+</head>
+<body>
+    <div class="paper-title">CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors</div>
+    
+    <div class="authors">
+        Boyang Yang<sup>1,2</sup>, Haoye Tian<sup>3</sup>, Weiguo Pian<sup>3</sup>, Haoran Yu<sup>2</sup><br>
+        Haitao Wang<sup>2</sup>, Jacques Klein<sup>4</sup>, Tegawendé Bissyandé<sup>4</sup>, Shunfu Jin<sup>1</sup><br>
+        <small><sup>1</sup>School of Information Science and
+            Engineering, Yanshan University<br>
+        <sup>2</sup>Jisuan Institute of Technology, Beijing JudaoYouda Network Technology Co. Ltd.<br>
+        <sup>3</sup>CIS, University of Melbourne<br>
+        <sup>4</sup>SnT, University of Luxembourg</small>
+    </div>
+    
+    <div class="abstract">
+        <h2>Abstract</h2>
+        <p>Program repair techniques offer cost-saving benefits for debugging within software development and programming education scenarios. With the proven effectiveness of Large Language Models (LLMs) in code-related tasks, researchers have explored their potential for program repair. However, it is crucial to recognize that existing repair benchmarks may have influenced LLM training data, potentially causing data leakage. To evaluate LLMs' realistic repair capabilities, ❶ we introduce an extensive, non-crawled benchmark, referred to as \dataset, comprising 1,239 C++ defect codes and associated information such as tutor guidance, solution description, failing test cases, and the corrected code. Our work assesses the repair performance of 12 LLMs on \dataset, measuring repair correctness (TOP-5 and AVG-5) and patch precision (RPSR). ❷ We then provide a comprehensive investigation into which types of extra information can help LLMs improve their performance in repairing defects. Among these types, tutor guidance was found to be the most effective information in enhancing LLM repair capabilities. To fully harness LLMs' conversational capabilities and the benefits of augmented information, ❸ we introduce a novel conversational semi-automatic repair framework CREF assisting human programming tutor. It demonstrates a remarkable AVG-5 improvement of 17.2%-24.6% compared to the baseline, achieving an impressive AVG-5 of 76.6% when utilizing GPT-4. These results highlight the potential for enhancing LLMs' repair capabilities through interactions with tutors and historical conversations involving incorrect responses. The successful application of CREF in a real-world educational setting demonstrates its effectiveness in reducing tutors' workload and improving students' learning experience, while also showcasing its promise for facilitating other software engineering tasks, such as code review.</p>
+    </div>
+    
+    <div class="figure">
+        <img src="./figures/CREF.png" alt="Model Architecture Diagram">
+        <div class="figure-caption">Overview of CREF.</div>
+    </div>
+    
+    <div class="repository">
+        <a href="https://github.com/buaabarty/CREF" target="_blank">Access Code Repository</a>
+    </div>
+</body>
+</html>
