@@ -1,6 +1,6 @@
 # TutorCode & CREF
 
-This is the artifact of the paper "CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors, Boyang Yang, Haoye Tian, Jacques Klein, Tegawendé Bissyandé, and Shunfu Jin", [ISSTA 2024](https://2024.issta.org/track/issta-2024-papers).
+This is the artifact of the paper "[CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors](https://arxiv.org/pdf/2406.13972), Boyang Yang, Haoye Tian, Jacques Klein, Tegawendé Bissyandé, and Shunfu Jin", [ISSTA 2024](https://2024.issta.org/track/issta-2024-papers).
 
 ## I) TutorCode
 The benchmark **Tutorcode** consists of 1,239 incorrect C++ codes written by 427 distinct students and associated information such as tutor guidance, solution description, failing test cases, and the ground truth corrected code.
