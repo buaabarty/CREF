@@ -1,6 +1,21 @@
+# CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors
+
+```bibtex
+@article{yang2024cref,
+  title={CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors},
+  author={Yang, Boyang and Tian, Haoye and Pian, Weiguo and Yu, Haoran and Wang, Haitao and Klein, Jacques and Bissyand{\'e}, Tegawend{\'e} F and Jin, Shunfu},
+  booktitle={Proceedings of ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA)},
+  year={2024},
+  organization={ACM}
+}
+```
+
+Paper Link: https://arxiv.org/pdf/2406.13972
+
 # TutorCode & CREF
 
-This is the artifact of the paper "[CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors](https://arxiv.org/pdf/2406.13972), Boyang Yang, Haoye Tian, Weiguo Pian, Haoran Yu, Haitao Wang, Jacques Klein, Tegawendé Bissyandé, and Shunfu Jin", [ISSTA 2024](https://2024.issta.org/track/issta-2024-papers).
+=======
+<!-- This is the artifact of the paper "[CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors](https://arxiv.org/pdf/2406.13972), Boyang Yang, Haoye Tian, Weiguo Pian, Haoran Yu, Haitao Wang, Jacques Klein, Tegawendé Bissyandé, and Shunfu Jin", [ISSTA 2024](https://2024.issta.org/track/issta-2024-papers). -->
 
 ## I) TutorCode
 The benchmark **Tutorcode** consists of 1,239 incorrect C++ codes written by 427 distinct students and associated information such as tutor guidance, solution description, failing test cases, and the ground truth corrected code.
@@ -125,15 +140,3 @@ python3 experiment.py 5 interactive codellama
 
 These scripts evaluate the effectiveness of conversational program repair across various LLMs. The first parameter specifies the number of rounds of interaction, and the final parameter specifies the LLM identifier.
 
-# Cite
-If you find this paper or code useful, please cite it as follows:
-
-```
-@article{yang2024cref,
-  title={CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors},
-  author={Yang, Boyang and Tian, Haoye and Pian, Weiguo and Yu, Haoran and Wang, Haitao and Klein, Jacques and Bissyand{\'e}, Tegawend{\'e} F and Jin, Shunfu},
-  booktitle={Proceedings of ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA)},
-  year={2024},
-  organization={ACM}
-}
-```
