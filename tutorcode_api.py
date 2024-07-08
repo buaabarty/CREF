@@ -1,20 +1,25 @@
 import requests
+import time
 def fetch_data(id):
-    url = "http://170.187.174.223:9999/item/" + str(id)
+    url = "http://tutorcode.org/item/" + str(id)
     headers = {
         "API-KEY": "tutorcode_api_key_temp_52312"
     }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(response.status_code)
-        return {'status': 'failed'}
+    retry_cnt = 0
+    while True:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(response.status_code)
+            retry_cnt += 1
+            time.sleep(1)
+            if retry_cnt >= 5:
+                break
+    return {'status': 'failed'}
 
 def get_testcase(problem_id, case_id):
-    url = f"http://170.187.174.223:9999/testcase/{problem_id}/{case_id}"
+    url = f"http://tutorcode.org/testcase/{problem_id}/{case_id}"
     headers = {
         "API-KEY": "tutorcode_api_key_temp_52312"
     }
@@ -28,7 +33,7 @@ def get_testcase(problem_id, case_id):
         return {'status': 'failed'}
 
 def judge(id, code):
-    url = "http://170.187.174.223:9999/judge"
+    url = "http://tutorcode.org/judge"
     headers = {
         "API-KEY": "tutorcode_api_key_temp_52312",
         'Content-Type': 'application/json',

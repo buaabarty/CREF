@@ -122,3 +122,16 @@ python3 experiment.py 5 interactive codellama
 ```
 
 These scripts evaluate the effectiveness of conversational program repair across various LLMs. The first parameter specifies the number of rounds of interaction, and the final parameter specifies the LLM identifier.
+
+# Cite
+If you find this paper or code useful, please cite it as follows:
+
+```
+@article{yang2024cref,
+  title={CREF: An LLM-based Conversational Software Repair Framework for Programming Tutors},
+  author={Yang, Boyang and Tian, Haoye and Pian, Weiguo and Yu, Haoran and Wang, Haitao and Klein, Jacques and Bissyand{\'e}, Tegawend{\'e} F and Jin, Shunfu},
+  booktitle={Proceedings of ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA)},
+  year={2024},
+  organization={ACM}
+}
+```
