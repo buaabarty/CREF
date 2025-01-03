@@ -1,7 +1,7 @@
 import requests
 import time
 def fetch_data(id):
-    url = "http://api.tutorcode.org/item/" + str(id)
+    url = "https://api.tutorcode.org/item/" + str(id)
     headers = {
         "API-KEY": "tutorcode_api_key_temp_52312"
     }
@@ -19,7 +19,7 @@ def fetch_data(id):
     return {'status': 'failed'}
 
 def get_testcase(problem_id, case_id):
-    url = f"http://api.tutorcode.org/testcase/{problem_id}/{case_id}"
+    url = f"https://api.tutorcode.org/testcase/{problem_id}/{case_id}"
     headers = {
         "API-KEY": "tutorcode_api_key_temp_52312"
     }
@@ -33,7 +33,7 @@ def get_testcase(problem_id, case_id):
         return {'status': 'failed'}
 
 def judge(id, code):
-    url = "http://api.tutorcode.org/judge"
+    url = "https://api.tutorcode.org/judge"
     headers = {
         "API-KEY": "tutorcode_api_key_temp_52312",
         'Content-Type': 'application/json',
